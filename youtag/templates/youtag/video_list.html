@@ -1,0 +1,8 @@
+{% extends "youtag/base.html" %}
+{% block content %}
+    {% for tag_video in tag_videos %}
+        <div class="tag_video">
+            <h1><a href="{% url 'video_detail' pk=tag_video.pk %}">{{ tag_video.tag }}</a></h1>
+        </div>
+    {% endfor %}
+{% endblock content %}
