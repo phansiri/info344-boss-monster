@@ -1,8 +1,24 @@
 {% extends "youtag/base.html" %}
+
 {% block content %}
-    {% for tag_video in tag_videos %}
-        <div class="tag_video">
-            <h1><a href="{% url 'video_detail' pk=tag_video.pk %}">{{ tag_video.tag }}</a></h1>
+
+<h2 class="titlepage">List of Videos</h2>
+{% for tag_video in tag_videos%}
+<div class=" row">
+    <div class="col-md-5">
+        <h3><a href="../video/{{ tag_video.id }}">{{ tag_video.video.title }}</a></h3>
+        <div class="owner">
+            <!--<p>List of Tags</p>-->
+            {% for tag in tag_video.tags.all %}
+                <a class="btn btn-primary" href="../tag/{{ tag.id }}" role="button">#{{ tag.word }}</a>
+            {% endfor %}
         </div>
-    {% endfor %}
+    </div>
+    <div class="col-md-7" id="videosection">
+        <iframe width="640" height="480" src="http://www.youtube.com/embed/{{ tag_video.video.vidId }}"></iframe>
+    </div>
+    <div class="tags">
+    </div>
+</div>
+{% endfor %}
 {% endblock content %}

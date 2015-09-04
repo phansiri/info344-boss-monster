@@ -1,0 +1,16 @@
+{% extends "youtag/base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+
+        <h3>INSTRUCTIONS:</h3>
+        <p>Please enter a valid Youtube URL, along with a comma-separated list of tags you wish to associate with this video.</p>
+
+        <form method="POST" class="post-form">{% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="save btn btn-default">Save</button>
+        </form>
+    </div>
+</div>
+{% endblock content %}

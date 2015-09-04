@@ -1,7 +1,7 @@
 from django.db import models
 from django.utils import timezone
 
-
+# # Video object
 class Video(models.Model):
     vidId = models.CharField(max_length=30)
     title = models.CharField(max_length=400)
@@ -10,17 +10,22 @@ class Video(models.Model):
     def __str__(self):
         return self.vidId
 
+    # def taglist(self):
+
+
+# # Tag object
 class Tag(models.Model):
     word = models.TextField()
 
     def __str__(self):
         return self.word
 
+# # TagVideo object
 class TagVideo(models.Model):
     owner = models.ForeignKey('auth.User')
     video = models.ForeignKey(Video)
-    tag = models.ForeignKey(Tag)
+    tags = models.ManyToManyField(Tag)
     created = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
-        return self.id
+        return str(self.id)

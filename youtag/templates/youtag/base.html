@@ -3,14 +3,40 @@
     <head>
         <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
         <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
+        <link rel="stylesheet" href="{% static 'css/youtag.css' %}">
         <title>YouTag</title>
     </head>
     <body>
-    <div class="page-header">
-        <h1><a href="/">YouTag</a></h1>
-    </div>
-        {% block content %}
-        {% endblock %}
+        <nav class="banner">
+        <ul>
+            <li><a href="/final">YouTag</a></li>
+            {% if user.is_authenticated %}
+            <li><a href="{% url 'video_list' %}" class="top-menu">Video</a></li>
+            <li><a href="{% url 'video_new' %}" class="top-menu"><span class="glyphicon glyphicon-plus"></span></a></li>
+            <li class="name">{{ user.username }} is in the house<small>(<a href="{% url 'django.contrib.auth.views.logout' %}">Log out</a>)</small></li>
+            {% else %}
+            <a href="{% url 'django.contrib.auth.views.login' %}" class="top-menu"><span class="glyphicon glyphicon-lock"></span></a>
+            {% endif %}
+        </ul>
+    </nav>
+    <!--<div class="nav-placeholder"></div>-->
+    <main class="container-fluid">
+        <section id="content" role="main">
+            {% for error in errors %}
+            <div>
+                <mark>{{ error }}</mark>
+            </div>
+            {% endfor %}
+
+            {% block content %}
+            {% endblock %}
+
+        </section>
+    </main>
+
+    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <script src="{% static 'js/youtag.js' %}"></script>
 
     </body>
 </html>

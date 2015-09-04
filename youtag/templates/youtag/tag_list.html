@@ -1,0 +1,21 @@
+{% extends "youtag/base.html" %}
+
+{% block content %}
+
+
+<h2 class="titlepage">List of Tags</h2>
+<div class="row">
+    {% for tag in tags %}
+    <div class="col-md-4">
+        <div class="tag">
+            <a class="btn btn-primary" href="{% url 'tag_detail' pk=tag.pk %}" role="button">#{{ tag.word }}</a>
+            <br>
+            <br>
+            <!--<h3><a href="{% url 'tag_detail' pk=tag.pk %}">#{{ tag.word }}</a></h3>-->
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+
+{% endblock content %}

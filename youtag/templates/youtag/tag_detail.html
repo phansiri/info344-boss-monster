@@ -1,0 +1,21 @@
+{% extends "youtag/base.html" %}
+
+{% block content %}
+
+<div class=" row">
+    <div class="col-md-2">
+        <h3>Tag</h3>
+        <h2>#{{ tag.word }}</h2>
+    </div>
+
+    <div class="col-md-10" id="videosection">
+            {% for video in videos %}
+            <h2>{{ video.title }}</h2>
+            <p>{{ video.desc|linebreaks }}</p>
+            <iframe width="640" height="480" src="http://www.youtube.com/embed/{{ video.vidId }}"></iframe>
+            {% endfor %}
+    </div>
+
+</div>
+
+{% endblock %}

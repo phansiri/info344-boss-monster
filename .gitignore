@@ -5,3 +5,5 @@ db.sqlite3
 .DS_Store
 settings.py
 db.mysql
+permissions.py
+requirements.txt

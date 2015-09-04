@@ -1,0 +1,13 @@
+{% extends "youtag/base.html" %}
+
+{% block content %}
+<div class="row">
+    <h2>Add Video</h2>
+    <p>Please type a valid youtube video id</p>
+    <form method="POST" class="post-form">{% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="save btn btn-default">Save</button>
+    </form>
+</div>
+
+{% endblock content %}
