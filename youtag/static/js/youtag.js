@@ -18,5 +18,27 @@ $(document).ready(function() {
             navPlaceholder.hide();
         }
     });
+
+    $("#urlForm").validate({
+        rules: {
+            video: {
+                required: true,
+                youTubeUrlOnly: true
+            },
+            tag: {
+                required: true
+            }
+        },
+        messages: {
+            video: {
+                required: "Please enter a valid Youtube url",
+                id_video: "The url should begin with http://wwwyoutube.com/..."
+            },
+            tag: "Please enter valid tags separated by commas"
+        }
+    });
 });
 
+jQuery.validator.addMethod("youTubeUrlOnly", function(value, element) {
+    return this.optional(element) || /^.+youtube.com/.test(value);
+}, "Only Youtube url only are allowed.");

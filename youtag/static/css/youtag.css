@@ -93,3 +93,7 @@ nav a:focus {
 #listtag {
     text-align: center;
 }
+
+#login {
+    padding: 15px;
+}

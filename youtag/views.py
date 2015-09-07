@@ -22,6 +22,7 @@ from rest_framework import generics
 from ratelimit.mixins import RatelimitMixin
 
 
+# This view gives a list of all the videos a user has uploaded
 @login_required(login_url='accounts/login/')
 def video_list(request):
     if not request.user.is_authenticated():
@@ -41,6 +42,7 @@ def tag_list(request):
         return render(request, 'youtag/tag_list.html', {'tags': tags})
 
 
+# This view gives a detail view of a tag, along with the videos associated with it
 @login_required(login_url='accounts/login/')
 def tag_detail(request, pk):
     if not request.user.is_authenticated():
@@ -73,6 +75,7 @@ def video_detail(request, pk):
                                                             'tagvideo': tagvideo,
                                                             'tags': tags})
 
+# This view allows you to delete a video
 @login_required(login_url='accounts/login/')
 def video_remove(request, pk):
     tagvideo = get_object_or_404(TagVideo, pk=pk)
@@ -91,11 +94,6 @@ def video_new(request):
             form = TagVideoForm(request.POST)
             if form.is_valid():
 
-                # start assigning data
-                tagvideo = TagVideo()
-                tagvideo.owner = request.user
-                tagvideo.created = timezone.now()
-
                 # deconstruct the url
                 try:
                     split_url = request.POST['video'].split('?')
@@ -111,6 +109,10 @@ def video_new(request):
                 # check and see if the video id exists already
                 try:
                     video = Video.objects.get(vidId=vidId)
+                    # if they have this video already, send them away
+                    tagvideo = TagVideo.objects.get(video=video, owner=request.user)
+                    if tagvideo is not None:
+                        return render(request, 'youtag/tagvideo_new.html', {'form': form, 'errors': ('That video already has been tagged.',)})
                 except:
                     # if not, build a new video
                     video = Video()
@@ -128,9 +130,12 @@ def video_new(request):
                     except:
                         return render(request, 'youtag/tagvideo_new.html', {'form': form, 'errors': ('That video was not found.',)})
 
-                # add in the video association
+                # start assigning data
                 video.save()
+                tagvideo = TagVideo()
                 tagvideo.video = video
+                tagvideo.owner = request.user
+                tagvideo.created = timezone.now()
                 tagvideo.save()
 
                 # split up the tags
@@ -143,8 +148,9 @@ def video_new(request):
                     except:
                         tag_obj = Tag.objects.create(word=tag)
                     # add in the tag association
-                    tag_obj.save()
-                    tagvideo.tags.add(tag_obj)
+                    if not tag == '':
+                        tag_obj.save()
+                        tagvideo.tags.add(tag_obj)
 
                 # save them all!
                 tagvideo.save()
@@ -177,30 +183,26 @@ class ApiDetail(RatelimitMixin, generics.RetrieveUpdateDestroyAPIView):
     permission_classes = (permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly,)
 
 
-
-# API List alows you to see the list of all your TagVideos
+# API List allows you to see the list of all your TagVideos
 # Create is allowed if you are authenticated
 
-@api_view(['GET', 'POST'])
+@login_required(login_url='../api-auth/login/')
+@api_view(['GET','POST'])
 def ApiList(request, format=None):
     if request.method == 'GET':
-        return Response('Not Yet', status=status.HTTP_400_BAD_REQUEST)
+        tagvideos = TagVideo.objects.filter(owner=request.user)
+        serializer = TagVideoSerializer(tagvideos, many=True)
+        return Response(serializer.data)
+
     elif request.method == 'POST':
         if not request.user.is_authenticated():
             return Response('You are not logged in.', status=status.HTTP_400_BAD_REQUEST)
         else:
-            data = request.POST
-
-            return Response(data, status=status.HTTP_400_BAD_REQUEST)
-
-            # start assigning data
-            tagvideo = TagVideo()
-            tagvideo.owner = request.user
-            tagvideo.created = timezone.now()
+            data = json.loads(request.POST['_content'])
 
             # deconstruct the url
             try:
-                split_url = request.POST['video'].split('?')
+                split_url = data['url'].split('?')
                 split_url = split_url[1].split('&')
 
                 for split in split_url:
@@ -208,11 +210,21 @@ def ApiList(request, format=None):
                         bits = split.split('=')
                         vidId = bits[1]
             except:
-                return render(request, 'youtag/tagvideo_new.html', {'form': form, 'errors': ('The URL was not properly formatted.',)})
+                return Response('url is not valid.', status=status.HTTP_400_BAD_REQUEST)
 
-            # check and see if the video id exists already
+            # make sure a list of tags is included
+            try:
+                taglist = data['tags'].replace(' ', '')
+            except:
+                return Response('Please include a comma-separated list of tags.', status=status.HTTP_400_BAD_REQUEST)
+
+
             try:
                 video = Video.objects.get(vidId=vidId)
+                # if they have this video already, send them away
+                tagvideo = TagVideo.objects.get(video=video, owner=request.user)
+                if tagvideo is not None:
+                    return Response('This video has already been tagged.', status=status.HTTP_400_BAD_REQUEST)
             except:
                 # if not, build a new video
                 video = Video()
@@ -220,23 +232,25 @@ def ApiList(request, format=None):
                 video.title = ''
                 video.desc = ''
 
-                # grab the video from the YouTube servers
-                try:
-                    querystring = 'https://www.googleapis.com/youtube/v3/videos?part=snippet&key=' + DEVELOPER_KEY + '&id=' + vidId
-                    results = json.loads(requests.request('GET', querystring).text)
-                    video.title = results['items'][0]['snippet']['title']
-                    video.desc = results['items'][0]['snippet']['description']
+            # grab the video from the YouTube servers
+            try:
+                querystring = 'https://www.googleapis.com/youtube/v3/videos?part=snippet&key=' + DEVELOPER_KEY + '&id=' + vidId
+                results = json.loads(requests.request('GET', querystring).text)
+                video.title = results['items'][0]['snippet']['title']
+                video.desc = results['items'][0]['snippet']['description']
 
-                except:
-                    return render(request, 'youtag/tagvideo_new.html', {'form': form, 'errors': ('That video was not found.',)})
+            except:
+                return Response('That Youtube video does not exist.', status=status.HTTP_400_BAD_REQUEST)
 
-            # add in the video association
+            # start assigning data
             video.save()
+            tagvideo = TagVideo()
             tagvideo.video = video
+            tagvideo.owner = request.user
+            tagvideo.created = timezone.now()
             tagvideo.save()
 
             # split up the tags
-            taglist = request.POST['tag'].replace(' ', '')
             taglist = taglist.split(',')
 
             for tag in taglist:
@@ -245,86 +259,16 @@ def ApiList(request, format=None):
                 except:
                     tag_obj = Tag.objects.create(word=tag)
                 # add in the tag association
-                tag_obj.save()
-                tagvideo.tags.add(tag_obj)
+                if not tag == '':
+                    tag_obj.save()
+                    tagvideo.tags.add(tag_obj)
 
             # save them all!
             tagvideo.save()
 
             return Response(status=status.HTTP_201_CREATED)
     else:
-        return Response('There was errors', status=status.HTTP_400_BAD_REQUEST)
+        return Response('This node only accepts GET and POST', status=status.HTTP_400_BAD_REQUEST)
 
 
-# class ApiList(RatelimitMixin, generics.ListCreateAPIView):
-#     ratelimit_key = 'ip'
-#     ratelimit_rate = '10/m'
-#     ratelimit_block = True
-#     ratelimit_method = 'GET', 'POST'
-#
-#     queryset = TagVideo.objects.all()
-#     serializer_class = TagVideoSerializer
-#     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
-#
-#     def post(self, request):
-#         data = request.data
-#
-#         data['owner'] = request.user.id
-#         data['created'] = timezone.now()
-#
-#         try:
-#             split_url = data['url'].split('?')
-#             split_url = split_url[1].split('&')
-#
-#             for split in split_url:
-#                 if split.find('v=') >= 0:
-#                     bits = split.split('=')
-#                     data['vidId'] = bits[1]
-#         except:
-#             return Response('Malformed YouTube URL', status=status.HTTP_400_BAD_REQUEST)
-#
-#         try:
-#             video = Video.objects.get(vidId=vidId)
-#         except:
-#             # if not, build a new video
-#             video = Video()
-#             video.vidId = vidId
-#             video.title = ''
-#             video.desc = ''
-#
-#             # grab the video from the YouTube servers
-#             try:
-#                 querystring = 'https://www.googleapis.com/youtube/v3/videos?part=snippet&key=' + DEVELOPER_KEY + '&id=' + vidId
-#                 results = json.loads(requests.request('GET', querystring).text)
-#                 video.title = results['items'][0]['snippet']['title']
-#                 video.desc = results['items'][0]['snippet']['description']
-#             except:
-#                 return Response('Failed to contact YouTube servers', status=status.HTTP_400_BAD_REQUEST)
-#
-#         # add in the video association
-#         video.save()
-#         data['video'] = video.id
-#
-#         # sort the tags
-#         try:
-#             new_taglist = []
-#             for tags in data['taglist']:
-#                 try:
-#                     tag_obj = Tag.objects.get(word=tag)
-#                 except:
-#                     tag_obj = Tag.objects.create(word=tag)
-#                     # add in the tag association
-#                     tag_obj.save()
-#
-#                 new_taglist.add(tag_obj.id)
-#
-#             data['taglist'] = new_taglist
-#         except:
-#             return Response('Failed to process your taglist', status=status.HTTP_400_BAD_REQUEST)
-#
-#         serializer = TagVideoSerializer(data=data)
-#
-#         if serializer.is_valid():
-#             serializer.save()
-#             return Response(serializer.data, status=status.HTTP_201_CREATED)
-#         return Response(serializer.errors, sta
+

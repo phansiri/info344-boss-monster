@@ -7,8 +7,16 @@
         <h3>INSTRUCTIONS:</h3>
         <p>Please enter a valid Youtube URL, along with a comma-separated list of tags you wish to associate with this video.</p>
 
-        <form method="POST" class="post-form">{% csrf_token %}
-            {{ form.as_p }}
+        <form id="urlForm" method="POST" class="post-form">{% csrf_token %}
+            <!--{{ form.as_p }}-->
+            <p>
+                <label for="id_video">Video URL: </label>
+                <input type="url" id="id_video" name="video" class="form-control" maxlength="200" placeholder="youtube url only" autofocus required/>
+            </p>
+            <p>
+                <label for="id_tag">Tags: </label>
+                <input type="text" id="id_tag" name="tag" class="form-control" maxlength="200" placeholder="example: music, girl, awesome..."/>
+            </p>
             <button type="submit" class="save btn btn-default">Save</button>
         </form>
     </div>
