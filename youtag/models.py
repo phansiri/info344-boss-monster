@@ -10,8 +10,6 @@ class Video(models.Model):
     def __str__(self):
         return self.vidId
 
-    # def taglist(self):
-
 
 # # Tag object
 class Tag(models.Model):

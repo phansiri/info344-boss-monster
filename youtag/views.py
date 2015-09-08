@@ -21,6 +21,9 @@ from rest_framework import status
 from rest_framework import generics
 from ratelimit.mixins import RatelimitMixin
 
+# Home Page
+def home(request):
+    return render(request, 'youtag/home.html', {})
 
 # This view gives a list of all the videos a user has uploaded
 @login_required(login_url='accounts/login/')

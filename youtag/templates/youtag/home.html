@@ -1,0 +1,53 @@
+{% extends "youtag/base.html" %}
+
+{% block content %}
+
+
+<h2 class="titlepage">INSTRUCTIONS</h2>
+<p>YouTag is a tagging service for Youtube videos.  It allows you to quickly tag videos into groups so you can have organized views of related videos easily.</p>
+<p>You must log in with your assigned username and password to use YouTag.</p>
+<p>To tag a new video:
+    <ul>
+        <li>Click on the plus sign and enter a url and a list of tags.
+            <ul>
+                <li>url - a youtube video URL.</li>
+                <li>tags - a comma-separated list of tags you want to associate with this video.  No spaces are allowed in tags.</li>
+            </ul>
+        </li>
+        <li>Click on the Save button.</li>
+    </ul>
+</p>
+<p>To see a list of videos associated with a particular tag:
+    <ul>
+        <li>Click on Tags in the menu.</li>
+        <li>Click on the button with the tag you want to view.</li>
+    </ul>
+</p>
+<p>To delete a tagged video:
+    <ul>
+        <li>Click on Videos in the menu.</li>
+        <li>Click on the title of the video you wish to delete.</li>
+        <li>Click on the red X in the upper right to delete the video.</li>
+    </ul>
+</p>
+<h4 class="titlepage">API Reference</h4>
+<p>There is one accessible API endpoint, (site)/final/api.  You may choose to indicate the primary key of a particular TagVideo object, or you can leave it blank.</p>
+<p>If you access it with a primary key, you may GET, PUT, or DELETE.
+    <ol>
+        <li>GET - gives you the details and the primary keys of related Tags and the related Video object.</li>
+        <li>PUT* - lets you edit the details of the TagVideo object by providing a properly formed JSON object.</li>
+        <li>DELETE* - lets you delete your TagVideo object.</li>
+    </ol>
+</p>
+<p>If you access it without a primary key provided, you may GET or POST.
+    <ol>
+        <li>GET* - gives you a list and the details of all your created TagVideo objects.</li>
+        <li>POST* - Requires a custom JSON object.  Two string values should be provided for the keys "url" and "tags".</li>
+            <ul>
+                <li>url - a youtube video URL.</li>
+                <li>tags - a comma-separated list of tags you want to associate with this video.  No spaces are allowed in tags.</li>
+            </ul>
+    </ol>
+</p>
+<small>* not accessible unless logged in.</small>
+{% endblock content %}

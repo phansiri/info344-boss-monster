@@ -3,7 +3,8 @@ from . import views
 from rest_framework.urlpatterns import format_suffix_patterns
 
 urlpatterns = [
-    url(r'^$', views.tag_list, name='tag_list'),
+    url(r'^$', views.home, name='home'),
+    url(r'^tag/$', views.tag_list, name='tag_list'),
     url(r'^tag/(?P<pk>[0-9]+)/$', views.tag_detail, name='tag_detail'),
     url(r'^video/$', views.video_list, name='video_list'),
     url(r'^video/(?P<pk>[0-9]+)/$', views.video_detail, name='video_detail'),

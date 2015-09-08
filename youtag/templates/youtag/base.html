@@ -13,10 +13,12 @@
         <ul>
             <li><a href="/final">YouTag</a></li>
             {% if user.is_authenticated %}
-            <li><a href="{% url 'video_list' %}" class="top-menu">Video</a></li>
+            <li><a href="{% url 'tag_list' %}" class="top-menu">Tags</a></li>
+            <li><a href="{% url 'video_list' %}" class="top-menu">Videos</a></li>
             <li><a href="{% url 'video_new' %}" class="top-menu"><span class="glyphicon glyphicon-plus"></span></a></li>
             <li class="name">{{ user.username }} is in the house<small>(<a href="{% url 'django.contrib.auth.views.logout' %}">Log out</a>)</small></li>
             {% else %}
+            <li><a href="{% url 'django.contrib.auth.views.login' %}" class="top-menu">Login</a></li>
             <a href="{% url 'django.contrib.auth.views.login' %}" class="top-menu"><span class="glyphicon glyphicon-lock"></span></a>
             {% endif %}
         </ul>
